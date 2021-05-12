@@ -35,11 +35,11 @@ namespace DeterminingDNAHealthLib
 
         public static string GetMinMaxHealth(DNA dna, List<DNATester> testers)
         {
-            int maxHealth = 0;
-            int minHealth = int.MaxValue;
+            long maxHealth = 0;
+            long minHealth = long.MaxValue;
             foreach(DNATester tester in testers)
             {
-                int health = GetHealth(dna,tester);
+                long health = GetHealth(dna,tester);
                 if (health < minHealth) { minHealth = health; }
                 if (health > maxHealth) { maxHealth = health; }
             }
@@ -47,21 +47,23 @@ namespace DeterminingDNAHealthLib
             return $"{minHealth} {maxHealth}"; // min max
         }
 
-        private static int GetHealth(DNA dna,DNATester tester)
+        private static long GetHealth(DNA dna,DNATester tester)
         {
-            int result = 0;
+            long result = 0;
             for (int i = tester.HealthIndexFirst; i <= tester.HealthIndexLast;i++)
             {
                 string gene = dna.Genes[i];
                 int health = dna.Health[i];
 
-                int numberOfGenes = GetPositions(tester.DnaToCheck, gene).Count();
+                var indx = GetPositions(tester.DnaToCheck, gene);
+                
+
+                long numberOfGenes = GetPositions(tester.DnaToCheck, gene).Count();
                 result += numberOfGenes * health;
             }
 
             return result;
         }
-
 
 
         public static List<int> GetPositions( string source, string searchString)
@@ -115,6 +117,108 @@ namespace DeterminingDNAHealthLib
 
             return true;
         }
+
+
+        public static string GeAndCheckDNAFromFile(string fileName)
+        {
+            var fileLines = File.ReadAllLines(fileName);
+
+            int n = int.Parse(fileLines[0]);
+
+            List<string> genes = fileLines[1].Split(' ').ToList();
+            List<int> health = fileLines[2].Split(' ').
+                 ToList().Select(healthTemp => Convert.ToInt32(healthTemp)).ToList();
+
+
+            long maxHealth = 0;
+            long minHealth = long.MaxValue;
+
+            var grouped = genes.Select((v, k) => new { index = k, value = v }).
+                GroupBy(x => x.value).
+                Select(m => new { key = m.Key, indexes = m.Select(i=>i.index).ToList<int>() });
+
+
+            Dictionary<string,List<int>> groupedGenes = grouped.ToDictionary(x => x.key,x => x.indexes);
+
+            int s = Convert.ToInt32(fileLines[3]);
+            for (int sItr = 4; sItr < 4 + s; sItr++)
+            {
+                // zrobic to jako klasę i listę 
+                string[] firstMultipleInput = fileLines[sItr].Split(' ');
+
+                int first = Convert.ToInt32(firstMultipleInput[0]);
+
+                int last = Convert.ToInt32(firstMultipleInput[1]);
+
+                string d = firstMultipleInput[2];
+
+                long healthValue = GetHealth(groupedGenes, health, d, first, last);
+
+                if (healthValue < minHealth) { minHealth = healthValue; }
+                if (healthValue > maxHealth) { maxHealth = healthValue; }
+            }
+
+            return $"{minHealth} {maxHealth}";
+        }
+
+        // poszukac Algorytm Aho-Corasick
+        // https://github.com/pdonald/aho-corasick
+
+        private static long GetHealth(Dictionary<string, List<int>> genes, List<int> health, string gene,int first,int last)
+        {
+
+            long result = 0;
+    
+            foreach (var geneValPair in genes.Where(x=>gene.Contains( x.Key)) )
+            {
+
+                int numberOccurs = NumberOfOccurs(gene, geneValPair.Key);
+                for (int i = 0; i < geneValPair.Value.Count; i++)
+                {
+                    int idx = geneValPair.Value[i];
+                    if (idx >= first && idx <= last)
+                    {
+                        result += health[idx] * numberOccurs; 
+                    }
+                }
+                
+            }
+
+            return result;
+        }
+
+        static int NumberOfOccurs(string source, string searchString)
+        {
+
+            int result = 0;
+            try
+            {
+                int start = source.IndexOf(searchString[0]);
+                int stop = source.LastIndexOf(searchString[0]);
+                stop = (((stop + searchString.Length) > source.Length) ? (source.Length - searchString.Length) : stop) + 1;
+
+                for (int i = start; i <  stop ; i++)
+
+                {
+                    if (source.Substring(i, searchString.Length)
+                            .Equals(searchString))
+                    {
+                        result++;
+                    }
+
+                }
+            }
+            catch(Exception ex)
+            {
+                throw ex;
+            }
+
+          
+            
+            return result;
+        }
+
+      
 
 
     }

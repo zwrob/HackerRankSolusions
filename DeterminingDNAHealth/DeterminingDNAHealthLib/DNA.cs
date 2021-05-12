@@ -15,6 +15,5 @@ namespace DeterminingDNAHealthLib
             Health = health;
         }
 
-
     }
 }

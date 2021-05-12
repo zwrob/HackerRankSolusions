@@ -15,6 +15,8 @@ namespace DeterminingDNAHealthTest
         [TestMethod]
         public void TestMethod1()
         {
+
+            // przechodzi tylko TestCase 0
             Solution.GetDNAFromFile(Path.Combine(testFilesPath, "InputFileTest1.txt"),
                 out DNA dna, out List<DNATester> dnaTesters);
 
@@ -22,6 +24,17 @@ namespace DeterminingDNAHealthTest
             Assert.AreNotEqual(0, dnaTesters.Count);
 
             Assert.AreEqual("0 19", Solution.GetMinMaxHealth(dna,dnaTesters));
+
+        }
+
+
+        [TestMethod]
+        public void TestMethod3()
+        {
+            // przechodzi Test Case: 0,1,10,11,12
+           string result =  Solution.GeAndCheckDNAFromFile((Path.Combine(testFilesPath, "InputFileTest2.txt")));
+
+           Assert.AreEqual("15806635 20688978289",result);
 
         }
     }

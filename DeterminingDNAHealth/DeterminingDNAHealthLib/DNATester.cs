@@ -6,7 +6,6 @@ namespace DeterminingDNAHealthLib
 {
     public struct DNATester
     {
-
         public string DnaToCheck { get; }
         public int HealthIndexFirst { get; }
         public int HealthIndexLast { get; }
@@ -17,7 +16,5 @@ namespace DeterminingDNAHealthLib
             HealthIndexFirst = healthIndexFirst;
             HealthIndexLast = healthIndexLast;
         }
-
-
     }
 }
