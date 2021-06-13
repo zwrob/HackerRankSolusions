@@ -3,14 +3,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.IO;
 using System.Text.RegularExpressions;
+using DeterminingDNAHealthLib.AhoCorasick;
 
 namespace DeterminingDNAHealthLib
 {
 
-    //https://www.hackerrank.com/challenges/determining-dna-health/problem
+    // https://www.hackerrank.com/challenges/determining-dna-health/problem
 
+    [ObsoleteAttribute("This class is obsolete. Use class SolutionAhoCorasick instead.", false)]
     public class Solution
     {
+        /*
         public static void Main(string[] args)
         {
             int n = Convert.ToInt32(Console.ReadLine().Trim());
@@ -118,8 +121,9 @@ namespace DeterminingDNAHealthLib
             return true;
         }
 
+        */
 
-        public static string GeAndCheckDNAFromFile(string fileName)
+        public static string GetAndCheckDNAFromFile(string fileName)
         {
             var fileLines = File.ReadAllLines(fileName);
 
@@ -161,8 +165,6 @@ namespace DeterminingDNAHealthLib
             return $"{minHealth} {maxHealth}";
         }
 
-        // poszukac Algorytm Aho-Corasick
-        // https://github.com/pdonald/aho-corasick
 
         private static long GetHealth(Dictionary<string, List<int>> genes, List<int> health, string gene,int first,int last)
         {
@@ -218,9 +220,106 @@ namespace DeterminingDNAHealthLib
             return result;
         }
 
-      
+
+        public static string GetAndCheckDNAFromFileAhoCorasick(string fileName)
+        {
+            var fileLines = File.ReadAllLines(fileName);
+
+            int n = int.Parse(fileLines[0]);
+
+            List<string> genes = fileLines[1].Split(' ').ToList();
+            List<int> health = fileLines[2].Split(' ').
+                 ToList().Select(healthTemp => Convert.ToInt32(healthTemp)).ToList();
+
+
+            long maxHealth = 0;
+            long minHealth = long.MaxValue;
+
+            var grouped = genes.Select((v, k) => new { index = k, value = v }).
+                GroupBy(x => x.value).
+                Select(m => new { key = m.Key, indexes = m.Select(i => i.index).ToList<int>() });
+
+
+            Dictionary<string, List<int>> groupedGenes = grouped.ToDictionary(x => x.key, x => x.indexes);
+
+            /*
+            Trie trie = new Trie();
+            foreach(var f in grouped)
+            {
+                trie.Add(f.key);
+            }
+            trie.Build();
+            */
+
+            int s = Convert.ToInt32(fileLines[3]);
+            for (int sItr = 4; sItr < 4 + s; sItr++)
+            {
+                // zrobic to jako klasę i listę 
+                string[] firstMultipleInput = fileLines[sItr].Split(' ');
+
+                int first = Convert.ToInt32(firstMultipleInput[0]);
+
+                int last = Convert.ToInt32(firstMultipleInput[1]);
+
+                string d = firstMultipleInput[2];
+
+                long healthValue = GetHealth(groupedGenes, health, d, first, last, null);
+
+                if (healthValue < minHealth) { minHealth = healthValue; }
+                if (healthValue > maxHealth) { maxHealth = healthValue; }
+            }
+
+            return $"{minHealth} {maxHealth}";
+        }
+
+        private static long GetHealth(Dictionary<string, List<int>> genes, List<int> health,
+            string gene, int first, int last,Trie trie_)
+        {
+
+            long result = 0;
+
+            foreach (var geneValPair in genes.Where(x => gene.Contains(x.Key)))
+            {
+
+                Trie trie = new Trie();
+                trie.Add(geneValPair.Key);
+               
+                trie.Build();
+
+
+                int numberOccurs = trie.Find(gene)/*.Where(x => x == geneValPair.Key)*/.Count();// NumberOfOccurs(gene, geneValPair.Key);
+                for (int i = 0; i < geneValPair.Value.Count; i++)
+                {
+                    int idx = geneValPair.Value[i];
+                    if (idx >= first && idx <= last)
+                    {
+                        result += health[idx] * numberOccurs;
+                    }
+                }
+
+            }
+
+            return result;
+        }
 
 
     }
 
 }
+
+/*
+          Trie trie = new Trie();
+          trie.Add("el");
+       //   trie.Add("world");
+
+          // build search tree
+          trie.Build();
+
+          string text = "hello and welcome to this beautiful world!";
+
+          // find words
+          foreach (string word in trie.Find(text))
+          {
+              var f = word;
+          }
+          */

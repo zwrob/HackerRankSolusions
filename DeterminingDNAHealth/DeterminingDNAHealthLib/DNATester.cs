@@ -4,6 +4,7 @@ using System.Text;
 
 namespace DeterminingDNAHealthLib
 {
+    /*
     public struct DNATester
     {
         public string DnaToCheck { get; }
@@ -17,4 +18,5 @@ namespace DeterminingDNAHealthLib
             HealthIndexLast = healthIndexLast;
         }
     }
+    */
 }

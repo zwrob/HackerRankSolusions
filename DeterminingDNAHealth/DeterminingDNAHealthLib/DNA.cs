@@ -4,6 +4,7 @@ using System.Text;
 
 namespace DeterminingDNAHealthLib
 {
+    /*
     public struct DNA
     {
         public List<string> Genes { get; }
@@ -15,5 +16,5 @@ namespace DeterminingDNAHealthLib
             Health = health;
         }
 
-    }
+    } */
 }
